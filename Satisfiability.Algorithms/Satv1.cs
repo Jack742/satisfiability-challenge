@@ -5,6 +5,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Satisfiability.Algorithms
 {
@@ -65,12 +66,12 @@ namespace Satisfiability.Algorithms
                 }
             }
 
-            Dictionary<int,bool> results = new Dictionary<int, bool>(literals.Count);
+            Dictionary<int,bool> pure_literals = new Dictionary<int, bool>(literals.Count);
 
             foreach (int lit in literals)
             {
                 if(!literals.Contains(lit * -1)){
-                    results.Add(lit,true ? lit > 0 : false);
+                    pure_literals.Add(lit,true ? lit > 0 : false);
                 }
             }
             List<List<int>> reduced = new List<List<int>>();
@@ -80,7 +81,7 @@ namespace Satisfiability.Algorithms
                 bool break_ = false;
                 foreach (int num in clause)
                 {
-                    if (results.ContainsKey(num))
+                    if (pure_literals.ContainsKey(num))
                     {
                         break_ = true;
                         break;
@@ -91,18 +92,26 @@ namespace Satisfiability.Algorithms
                 {
                     reduced.Add(clause);
                 }
-                break_ = false;
             }
             if (reduced.Count == 0)
             {
-                List<bool> return_results = new List<bool>(numVariables);
-                foreach(int idx in results.Keys)
-                {
-                    return_results[Math.Abs(idx) - 1] = results[idx];
-                }
+                List<bool> return_results = populate_pure_literals();
+                
                 return return_results;
             }
+            
             return new();
+            
+            List<bool> populate_pure_literals()
+            {
+                List<bool> ret_res = new List<bool>(numVariables);
+
+                foreach (int idx in pure_literals.Keys)
+                {
+                    ret_res[Math.Abs(idx) - 1] = pure_literals[idx];
+                }
+                return ret_res;
+            }
         }
     }
 }
